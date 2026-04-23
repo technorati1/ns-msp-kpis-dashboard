@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_cache } from 'next/cache';
 import { fetchAllTabs } from '@/lib/sheets';
-import { normalizeAllRows } from '@/lib/normalize';
+import { normalizeAllRows, reviveOpportunity } from '@/lib/normalize';
 import { parseFiltersFromParams } from '@/lib/filters';
 import { computeAllKpis } from '@/lib/kpis';
 
@@ -9,7 +9,7 @@ export const runtime = 'nodejs';
 
 async function getOpportunities() {
   const { funnel2025, funnel2026 } = await fetchAllTabs();
-  return normalizeAllRows(funnel2025, funnel2026).opportunities;
+  return normalizeAllRows(funnel2025, funnel2026).opportunities.map(reviveOpportunity);
 }
 
 export async function GET(req: NextRequest) {

@@ -20,8 +20,9 @@ export function parseFiltersFromParams(params: URLSearchParams): Filters {
   const rawLine = params.get('serviceLine') as ServiceLine | 'all' | null;
   const rawEng = params.get('engagementType') as EngagementType | 'all' | null;
 
+  const currentYear = new Date().getFullYear() >= 2026 ? 2026 : 2025;
   const year: Filters['year'] =
-    rawYear === '2025' ? 2025 : rawYear === '2026' ? 2026 : 'all';
+    rawYear === '2025' ? 2025 : rawYear === '2026' ? 2026 : rawYear === 'all' ? 'all' : currentYear;
 
   const monthNum = rawMonth ? parseInt(rawMonth, 10) : NaN;
   const month: Filters['month'] =

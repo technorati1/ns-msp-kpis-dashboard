@@ -174,6 +174,20 @@ export function normalizeRows(rows: RawRow[], sourceTab: SourceTab): NormalizeRe
   return { opportunities, filteredOutCount, deduplicatedCount };
 }
 
+/** Re-hydrate Date fields after JSON round-trip (e.g. unstable_cache). */
+export function reviveOpportunity(o: Opportunity): Opportunity {
+  return {
+    ...o,
+    createdDate: o.createdDate instanceof Date ? o.createdDate : new Date(o.createdDate),
+    closeDate:
+      o.closeDate == null
+        ? null
+        : o.closeDate instanceof Date
+        ? o.closeDate
+        : new Date(o.closeDate as unknown as string),
+  };
+}
+
 export function normalizeAllRows(
   rows2025: RawRow[],
   rows2026: RawRow[]

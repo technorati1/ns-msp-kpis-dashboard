@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_cache } from 'next/cache';
 import { fetchAllTabs } from '@/lib/sheets';
-import { normalizeAllRows } from '@/lib/normalize';
+import { normalizeAllRows, reviveOpportunity } from '@/lib/normalize';
 import { monthlyTrend } from '@/lib/kpis';
 import type { Filters } from '@/lib/filters';
 
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     const result = await unstable_cache(
       async () => {
         const { funnel2025, funnel2026 } = await fetchAllTabs();
-        const opps = normalizeAllRows(funnel2025, funnel2026).opportunities;
+        const opps = normalizeAllRows(funnel2025, funnel2026).opportunities.map(reviveOpportunity);
         return monthlyTrend(opps, year, metric, serviceLine, engagementType);
       },
       [cacheKey],
