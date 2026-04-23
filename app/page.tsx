@@ -1,11 +1,16 @@
 import { Suspense } from 'react';
 import { fetchAllTabs } from '@/lib/sheets';
 import { normalizeAllRows, reviveOpportunity } from '@/lib/normalize';
-import { computeAllKpis } from '@/lib/kpis';
+import { computeAllKpis, monthlyTrend, segmentBreakdown } from '@/lib/kpis';
 import { parseFiltersFromParams } from '@/lib/filters';
+import { TARGETS } from '@/lib/targets';
 import { KpiGrid } from '@/components/kpi-grid';
 import { FilterBar } from '@/components/filter-bar';
 import { Separator } from '@/components/ui/separator';
+import { RevenueTrendChart } from '@/components/charts/revenue-trend';
+import { SegmentBreakdownChart } from '@/components/charts/segment-breakdown';
+import { PipelineVsTargetChart } from '@/components/charts/pipeline-vs-target';
+import { OpportunityTable } from '@/components/opportunity-table';
 import { unstable_cache } from 'next/cache';
 
 const SHEET_URL =
@@ -32,33 +37,66 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
   );
 
   const filters = parseFiltersFromParams(urlParams);
-
-  // Default to current year if not specified
   const displayYear = filters.year;
   const displayMonth = filters.month;
   const displayLine = filters.serviceLine;
   const displayEng = filters.engagementType;
+  const yearParam = String(displayYear);
+  const monthParam = String(displayMonth);
 
   let kpis = null;
   let fetchedAt: string | undefined;
   let errorMsg: string | null = null;
+  let nbwTrend: Awaited<ReturnType<typeof monthlyTrend>> = [];
+  let mrrTrend: Awaited<ReturnType<typeof monthlyTrend>> = [];
+  let segments: Awaited<ReturnType<typeof segmentBreakdown>> = [];
+  let filteredOpps: Awaited<ReturnType<typeof reviveOpportunity>>[] = [];
 
   try {
     const { opportunities: raw, fetchedAt: fa } = await getCachedData();
     fetchedAt = fa;
     const opportunities = raw.map(reviveOpportunity);
     kpis = computeAllKpis(opportunities, filters);
+
+    const trendYear: 2025 | 2026 = displayYear === 'all' ? 2026 : displayYear;
+    nbwTrend = monthlyTrend(opportunities, trendYear, 'newBusinessWon', displayLine, displayEng);
+    mrrTrend = monthlyTrend(opportunities, trendYear, 'mrrAdded', displayLine, displayEng);
+    segments = segmentBreakdown(opportunities, filters);
+
+    // Filter opportunities for drill-through table
+    filteredOpps = opportunities.filter((o) => {
+      if (displayYear !== 'all') {
+        const tabYear = o.sourceTab === 'Sales Funnel 2025' ? 2025 : 2026;
+        if (tabYear !== displayYear) return false;
+      }
+      if (displayLine !== 'all' && o.serviceLine !== displayLine) return false;
+      if (displayEng !== 'all' && o.engagementType !== displayEng) return false;
+      return true;
+    });
   } catch (err) {
     errorMsg = err instanceof Error ? err.message : 'Failed to load data';
   }
 
-  const yearParam = String(displayYear);
-  const monthParam = String(displayMonth);
+  const pipelineTarget =
+    displayYear !== 'all'
+      ? (TARGETS[displayYear]?.annual.qualifiedPipeline ?? 0)
+      : 0;
+
+  const periodLabel = [
+    displayYear === 'all' ? 'All Years' : String(displayYear),
+    displayMonth !== 'all'
+      ? new Date(2026, Number(displayMonth) - 1).toLocaleString('en-US', { month: 'long' })
+      : null,
+    displayLine !== 'all' ? displayLine : null,
+    displayEng !== 'all' ? displayEng : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <div className="min-h-screen bg-zinc-50">
       {/* Header */}
-      <header className="border-b border-zinc-200 bg-white">
+      <header className="border-b border-zinc-200 bg-white sticky top-0 z-10">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
@@ -92,42 +130,69 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           </div>
         )}
 
-        {/* KPI grid */}
         {kpis && (
-          <section aria-label="Key Performance Indicators">
-            <h2 className="mb-4 text-sm font-medium text-zinc-500 uppercase tracking-wide">
-              {displayYear === 'all' ? 'All Years' : displayYear}
-              {displayMonth !== 'all' ? ` · ${new Date(2026, Number(displayMonth) - 1).toLocaleString('en-US', { month: 'long' })}` : ''}
-              {displayLine !== 'all' ? ` · ${displayLine}` : ''}
-              {displayEng !== 'all' ? ` · ${displayEng}` : ''}
-            </h2>
-            <KpiGrid kpis={kpis} year={displayYear === 'all' ? 'all' : (displayYear as 2025 | 2026)} />
-          </section>
-        )}
+          <>
+            {/* Section label */}
+            <p className="text-sm font-medium text-zinc-500 uppercase tracking-wide -mb-4">
+              {periodLabel}
+            </p>
 
-        {/* Secondary stats strip */}
-        {kpis && (
-          <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {[
-              { label: 'New Logos Won', value: kpis.newLogosWon.toString() },
-              { label: 'Sales Cycle', value: kpis.salesCycleDays > 0 ? `${kpis.salesCycleDays} days` : '—' },
-              { label: 'Weighted Forecast', value: kpis.weightedForecast > 0 ? `$${kpis.weightedForecast.toLocaleString('en-US', { maximumFractionDigits: 0 })}` : '—' },
-              {
-                label: 'Pipeline Coverage',
-                value: kpis.newBusinessWon > 0
-                  ? `${((kpis.qualifiedPipeline90d / kpis.newBusinessWon) * 100).toFixed(0)}%`
-                  : '—',
-              },
-            ].map(({ label, value }) => (
-              <div
-                key={label}
-                className="rounded-xl border border-zinc-200 bg-white px-5 py-4 shadow-sm"
-              >
-                <p className="text-xs font-medium uppercase tracking-wide text-zinc-400">{label}</p>
-                <p className="mt-1 text-2xl font-semibold text-zinc-900 text-right">{value}</p>
-              </div>
-            ))}
-          </section>
+            {/* KPI grid */}
+            <section aria-label="Key Performance Indicators">
+              <KpiGrid kpis={kpis} year={displayYear === 'all' ? 'all' : displayYear} />
+            </section>
+
+            {/* Secondary stats strip */}
+            <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              {[
+                { label: 'New Logos Won', value: kpis.newLogosWon.toString() },
+                { label: 'Sales Cycle', value: kpis.salesCycleDays > 0 ? `${kpis.salesCycleDays} days` : '—' },
+                {
+                  label: 'Weighted Forecast',
+                  value: kpis.weightedForecast > 0
+                    ? `$${kpis.weightedForecast.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+                    : '—',
+                },
+                {
+                  label: 'Pipeline Coverage',
+                  value:
+                    kpis.newBusinessWon > 0 && kpis.qualifiedPipeline90d > 0
+                      ? `${((kpis.qualifiedPipeline90d / kpis.newBusinessWon) * 100).toFixed(0)}%`
+                      : '—',
+                },
+              ].map(({ label, value }) => (
+                <div key={label} className="rounded-xl border border-zinc-200 bg-white px-5 py-4 shadow-sm">
+                  <p className="text-xs font-medium uppercase tracking-wide text-zinc-400">{label}</p>
+                  <p className="mt-1 text-2xl font-semibold text-zinc-900 text-right">{value}</p>
+                </div>
+              ))}
+            </section>
+
+            {/* Charts row 1 */}
+            <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <RevenueTrendChart
+                data={nbwTrend}
+                title={`New Business Won · ${displayYear === 'all' ? '2026' : displayYear}`}
+              />
+              <RevenueTrendChart
+                data={mrrTrend}
+                title={`MRR Added · ${displayYear === 'all' ? '2026' : displayYear}`}
+              />
+            </section>
+
+            {/* Charts row 2 */}
+            <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <SegmentBreakdownChart data={segments} />
+              <PipelineVsTargetChart
+                actual={kpis.newBusinessWon}
+                target={pipelineTarget}
+                year={displayYear}
+              />
+            </section>
+
+            {/* Opportunity drill-through */}
+            <OpportunityTable opportunities={filteredOpps} />
+          </>
         )}
       </main>
 
