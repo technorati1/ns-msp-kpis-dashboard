@@ -18,8 +18,8 @@ export function PipelineVsTargetChart({ actual, target, year }: Props) {
   const hasData = actual > 0 || target > 0;
 
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-      <h3 className="mb-4 text-sm font-medium text-zinc-500 uppercase tracking-wide">
+    <div className="rounded-2xl border-0 bg-white p-6 shadow-[0_1px_4px_0_rgba(0,0,0,0.06),0_4px_16px_0_rgba(0,0,0,0.04)]">
+      <h3 className="mb-4 text-xs font-semibold text-zinc-400 uppercase tracking-widest">
         Pipeline vs Target{year !== 'all' ? ` · ${year}` : ''}
       </h3>
       {hasData ? (
@@ -48,14 +48,14 @@ export function PipelineVsTargetChart({ actual, target, year }: Props) {
                   fontSize: 12,
                 }}
               />
-              <Bar dataKey="value" fill="#0ea5e9" radius={[4, 4, 0, 0]} maxBarSize={80} />
+              <Bar dataKey="value" fill="#4f46e5" radius={[4, 4, 0, 0]} maxBarSize={80} />
               {target > 0 && (
                 <ReferenceLine
                   y={target}
-                  stroke="#f97316"
+                  stroke="#7c3aed"
                   strokeDasharray="4 4"
                   strokeWidth={1.5}
-                  label={{ value: 'Target', position: 'insideTopRight', fontSize: 10, fill: '#f97316' }}
+                  label={{ value: 'Target', position: 'insideTopRight', fontSize: 10, fill: '#7c3aed' }}
                 />
               )}
             </BarChart>

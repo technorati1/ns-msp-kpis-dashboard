@@ -9,7 +9,7 @@ import type { SegmentValue } from '@/lib/kpis';
 
 type Props = { data: SegmentValue[] };
 
-const COLOURS = ['#0ea5e9', '#6366f1', '#10b981'];
+const COLOURS = ['#4f46e5', '#7c3aed', '#10b981'];
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
@@ -25,8 +25,8 @@ export function SegmentBreakdownChart({ data }: Props) {
   const hasData = data.some((d) => d.value > 0);
 
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-      <h3 className="mb-4 text-sm font-medium text-zinc-500 uppercase tracking-wide">
+    <div className="rounded-2xl border-0 bg-white p-6 shadow-[0_1px_4px_0_rgba(0,0,0,0.06),0_4px_16px_0_rgba(0,0,0,0.04)]">
+      <h3 className="mb-4 text-xs font-semibold text-zinc-400 uppercase tracking-widest">
         New Business Won by Segment
       </h3>
       {hasData ? (

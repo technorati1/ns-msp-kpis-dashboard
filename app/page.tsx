@@ -6,7 +6,6 @@ import { parseFiltersFromParams } from '@/lib/filters';
 import { TARGETS } from '@/lib/targets';
 import { KpiGrid } from '@/components/kpi-grid';
 import { FilterBar } from '@/components/filter-bar';
-import { Separator } from '@/components/ui/separator';
 import { RevenueTrendChart } from '@/components/charts/revenue-trend';
 import { SegmentBreakdownChart } from '@/components/charts/segment-breakdown';
 import { PipelineVsTargetChart } from '@/components/charts/pipeline-vs-target';
@@ -95,9 +94,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
     .join(' · ');
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f8faff 0%, #f4f4f8 100%)' }}>
       {/* Header */}
-      <header className="border-b border-zinc-200 bg-white sticky top-0 z-10">
+      <header className="bg-white border-b border-zinc-200 sticky top-0 z-10" style={{ borderTop: '3px solid #4f46e5' }}>
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
@@ -123,8 +122,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           />
         </Suspense>
 
-        <Separator />
-
         {/* Error state */}
         {errorMsg && (
           <div className="rounded-xl border border-red-200 bg-red-50 px-6 py-4 text-sm text-red-700">
@@ -135,7 +132,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         {kpis && (
           <>
             {/* Section label */}
-            <p className="text-sm font-medium text-zinc-500 uppercase tracking-wide -mb-4">
+            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-widest -mb-4">
               {periodLabel}
             </p>
 
@@ -163,7 +160,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                       : '—',
                 },
               ].map(({ label, value }) => (
-                <div key={label} className="rounded-xl border border-zinc-200 bg-white px-5 py-4 shadow-sm">
+                <div key={label} className="rounded-2xl border-0 bg-white px-5 py-4 shadow-[0_1px_4px_0_rgba(0,0,0,0.06),0_4px_16px_0_rgba(0,0,0,0.04)]">
                   <p className="text-xs font-medium uppercase tracking-wide text-zinc-400">{label}</p>
                   <p className="mt-1 text-2xl font-semibold text-zinc-900 text-right">{value}</p>
                 </div>

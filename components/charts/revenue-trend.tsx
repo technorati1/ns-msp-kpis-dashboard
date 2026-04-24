@@ -23,8 +23,8 @@ export function RevenueTrendChart({ data, title }: Props) {
   const hasData = data.some((d) => d.value > 0);
 
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-      <h3 className="mb-4 text-sm font-medium text-zinc-500 uppercase tracking-wide">{title}</h3>
+    <div className="rounded-2xl border-0 bg-white p-6 shadow-[0_1px_4px_0_rgba(0,0,0,0.06),0_4px_16px_0_rgba(0,0,0,0.04)]">
+      <h3 className="mb-4 text-xs font-semibold text-zinc-400 uppercase tracking-widest">{title}</h3>
       {hasData ? (
         <ResponsiveContainer width="100%" height={200}>
           <LineChart data={data} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
@@ -47,9 +47,9 @@ export function RevenueTrendChart({ data, title }: Props) {
             <Line
               type="monotone"
               dataKey="value"
-              stroke="#0ea5e9"
+              stroke="#4f46e5"
               strokeWidth={2}
-              dot={{ r: 3, fill: '#0ea5e9', strokeWidth: 0 }}
+              dot={{ r: 3, fill: '#4f46e5', strokeWidth: 0 }}
               activeDot={{ r: 5 }}
             />
           </LineChart>
