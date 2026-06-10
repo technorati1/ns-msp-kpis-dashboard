@@ -9,14 +9,21 @@ import type { SegmentValue } from '@/lib/kpis';
 
 type Props = { data: SegmentValue[] };
 
-const COLOURS = ['#4f46e5', '#7c3aed', '#10b981'];
+// Ocean / teal / emerald / amber / violet — cycles for N segments.
+const COLOURS = [
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+  'var(--chart-4)',
+  'var(--chart-5)',
+];
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white px-3 py-2 shadow-md text-xs">
-      <p className="font-medium text-zinc-700">{label}</p>
-      <p className="text-zinc-900">{formatCurrency(payload[0].value)}</p>
+    <div className="rounded-lg border border-border bg-card px-3 py-2 shadow-md text-xs">
+      <p className="font-medium text-muted-foreground">{label}</p>
+      <p className="text-foreground font-mono tabular-nums">{formatCurrency(payload[0].value)}</p>
     </div>
   );
 };
@@ -25,8 +32,8 @@ export function SegmentBreakdownChart({ data }: Props) {
   const hasData = data.some((d) => d.value > 0);
 
   return (
-    <div className="rounded-2xl border-0 bg-white p-6 shadow-[0_1px_4px_0_rgba(0,0,0,0.06),0_4px_16px_0_rgba(0,0,0,0.04)]">
-      <h3 className="mb-4 text-xs font-semibold text-zinc-400 uppercase tracking-widest">
+    <div className="rounded-2xl border border-border bg-card p-6 shadow-[0_1px_2px_0_rgba(16,24,40,0.05)]">
+      <h3 className="mb-4 text-xs font-semibold text-muted-foreground uppercase tracking-widest">
         New Business Won by Segment
       </h3>
       {hasData ? (
@@ -36,11 +43,11 @@ export function SegmentBreakdownChart({ data }: Props) {
             layout="vertical"
             margin={{ top: 0, right: 16, left: 8, bottom: 0 }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="#f4f4f5" horizontal={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
             <XAxis
               type="number"
               tickFormatter={(v) => (v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v}`)}
-              tick={{ fontSize: 11, fill: '#a1a1aa' }}
+              tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
               axisLine={false}
               tickLine={false}
             />
@@ -48,11 +55,11 @@ export function SegmentBreakdownChart({ data }: Props) {
               type="category"
               dataKey="label"
               width={160}
-              tick={{ fontSize: 11, fill: '#71717a' }}
+              tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
               axisLine={false}
               tickLine={false}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f4f4f5' }} />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--muted)' }} />
             <Bar dataKey="value" radius={[0, 4, 4, 0]}>
               {data.map((_, i) => (
                 <Cell key={i} fill={COLOURS[i % COLOURS.length]} />
@@ -61,7 +68,7 @@ export function SegmentBreakdownChart({ data }: Props) {
           </BarChart>
         </ResponsiveContainer>
       ) : (
-        <div className="flex h-[200px] items-center justify-center text-sm text-zinc-400">
+        <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
           No data in selected period
         </div>
       )}

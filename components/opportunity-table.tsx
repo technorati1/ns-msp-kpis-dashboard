@@ -6,7 +6,7 @@ import {
   TableHeader, TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react';
+import { ChevronDown, ChevronUp, ChevronsUpDown, Search } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/format';
 import type { Opportunity } from '@/lib/normalize';
 
@@ -15,8 +15,8 @@ type SortDir = 'asc' | 'desc';
 
 const STATUS_COLOUR: Record<string, string> = {
   'Closed Won': 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100',
-  'Closed Lost': 'bg-red-100 text-red-600 hover:bg-red-100',
-  'Open': 'bg-sky-100 text-sky-700 hover:bg-sky-100',
+  'Closed Lost': 'bg-rose-100 text-rose-600 hover:bg-rose-100',
+  'Open': 'bg-accent text-[var(--secondary-foreground)] hover:bg-accent',
 };
 
 type Props = { opportunities: Opportunity[] };
@@ -25,7 +25,7 @@ export function OpportunityTable({ opportunities }: Props) {
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('annualisedValue');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -61,42 +61,45 @@ export function OpportunityTable({ opportunities }: Props) {
   }
 
   function SortIcon({ col }: { col: SortKey }) {
-    if (sortKey !== col) return <ChevronsUpDown className="ml-1 inline h-3 w-3 text-zinc-300" />;
+    if (sortKey !== col) return <ChevronsUpDown className="ml-1 inline h-3 w-3 text-muted-foreground/50" />;
     return sortDir === 'asc'
-      ? <ChevronUp className="ml-1 inline h-3 w-3 text-zinc-500" />
-      : <ChevronDown className="ml-1 inline h-3 w-3 text-zinc-500" />;
+      ? <ChevronUp className="ml-1 inline h-3 w-3 text-foreground" />
+      : <ChevronDown className="ml-1 inline h-3 w-3 text-foreground" />;
   }
 
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+    <div className="rounded-2xl border border-border bg-card shadow-[0_1px_2px_0_rgba(16,24,40,0.05)] overflow-hidden">
       <button
         className="flex w-full items-center justify-between px-6 py-4 text-left"
         onClick={() => setOpen((v) => !v)}
       >
-        <span className="text-sm font-medium text-zinc-700">
+        <span className="text-sm font-semibold text-foreground">
           Underlying Opportunities ({opportunities.length})
         </span>
         {open
-          ? <ChevronUp className="h-4 w-4 text-zinc-400" />
-          : <ChevronDown className="h-4 w-4 text-zinc-400" />}
+          ? <ChevronUp className="h-4 w-4 text-muted-foreground" />
+          : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
       </button>
 
       {open && (
-        <div className="border-t border-zinc-100">
+        <div className="border-t border-border">
           <div className="px-6 py-3">
-            <input
-              type="text"
-              placeholder="Search by account, service line, status, region…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-lg border border-zinc-200 px-3 py-1.5 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
-            />
+            <div className="relative max-w-sm">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search by account, service line, status, region…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full rounded-lg border border-border bg-card pl-9 pr-3 py-1.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-[var(--accent)]"
+              />
+            </div>
           </div>
 
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="border-zinc-100 bg-zinc-50">
+                <TableRow className="border-border bg-muted">
                   {([
                     ['accountName', 'Account'],
                     ['serviceLine', 'Service Line'],
@@ -108,7 +111,7 @@ export function OpportunityTable({ opportunities }: Props) {
                   ] as [SortKey, string][]).map(([key, label]) => (
                     <TableHead
                       key={key}
-                      className="cursor-pointer select-none text-xs text-zinc-500 whitespace-nowrap"
+                      className="cursor-pointer select-none text-xs font-semibold uppercase tracking-wide text-muted-foreground whitespace-nowrap"
                       onClick={() => handleSort(key)}
                     >
                       {label}<SortIcon col={key} />
@@ -119,34 +122,37 @@ export function OpportunityTable({ opportunities }: Props) {
               <TableBody>
                 {sorted.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-sm text-zinc-400 py-8">
+                    <TableCell colSpan={7} className="text-center text-sm text-muted-foreground py-8">
                       No opportunities match the current filters
                     </TableCell>
                   </TableRow>
                 ) : (
                   sorted.map((opp) => (
-                    <TableRow key={opp.id} className="border-zinc-100 hover:bg-zinc-50">
-                      <TableCell className="text-xs text-zinc-700 max-w-[180px] truncate">
+                    <TableRow key={opp.id} className="border-border hover:bg-accent">
+                      <TableCell className="text-xs font-medium text-foreground max-w-[180px] truncate">
                         {opp.accountName}
                       </TableCell>
-                      <TableCell className="text-xs text-zinc-600 whitespace-nowrap">
-                        {opp.serviceLine} · {opp.engagementType}
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                        <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-foreground">
+                          {opp.serviceLine}
+                        </span>
+                        <span className="ml-1.5">{opp.engagementType}</span>
                       </TableCell>
                       <TableCell>
-                        <Badge className={`text-xs font-normal ${STATUS_COLOUR[opp.status] ?? ''}`}>
+                        <Badge className={`text-xs font-medium ${STATUS_COLOUR[opp.status] ?? ''}`}>
                           {opp.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-xs text-zinc-500 whitespace-nowrap">
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap font-mono tabular-nums">
                         {formatDate(opp.createdDate)}
                       </TableCell>
-                      <TableCell className="text-xs text-zinc-500 whitespace-nowrap">
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap font-mono tabular-nums">
                         {opp.closeDate ? formatDate(opp.closeDate) : '—'}
                       </TableCell>
-                      <TableCell className="text-right text-xs font-medium text-zinc-800 whitespace-nowrap">
+                      <TableCell className="text-right text-xs font-semibold text-foreground whitespace-nowrap font-mono tabular-nums">
                         {opp.annualisedValue > 0 ? formatCurrency(opp.annualisedValue) : '—'}
                       </TableCell>
-                      <TableCell className="text-right text-xs text-zinc-600 whitespace-nowrap">
+                      <TableCell className="text-right text-xs text-muted-foreground whitespace-nowrap font-mono tabular-nums">
                         {opp.mrrMonthly > 0 ? formatCurrency(opp.mrrMonthly) : '—'}
                       </TableCell>
                     </TableRow>
@@ -155,7 +161,7 @@ export function OpportunityTable({ opportunities }: Props) {
               </TableBody>
             </Table>
           </div>
-          <div className="border-t border-zinc-100 px-6 py-3 text-xs text-zinc-400 text-right">
+          <div className="border-t border-border px-6 py-3 text-xs text-muted-foreground text-right">
             Showing {sorted.length} of {opportunities.length} opportunities
           </div>
         </div>

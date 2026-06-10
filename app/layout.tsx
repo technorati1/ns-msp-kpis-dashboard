@@ -1,8 +1,18 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const plexSans = IBM_Plex_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-plex-sans',
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  weight: ['500', '600'],
+  variable: '--font-plex-mono',
+});
 
 export const metadata: Metadata = {
   title: 'NetSuite Commercial KPIs',
@@ -11,8 +21,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full bg-zinc-50 font-sans">{children}</body>
+    <html
+      lang="en"
+      className={`${plexSans.variable} ${plexMono.variable} h-full antialiased`}
+    >
+      <body className="min-h-full bg-background text-foreground font-sans">
+        {children}
+      </body>
     </html>
   );
 }

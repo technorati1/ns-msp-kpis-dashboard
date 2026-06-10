@@ -94,16 +94,31 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
     .join(' · ');
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f8faff 0%, #f4f4f8 100%)' }}>
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white border-b border-zinc-200 sticky top-0 z-10" style={{ borderTop: '3px solid #4f46e5' }}>
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+      <header
+        className="bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-20"
+        style={{ borderTop: '3px solid var(--primary)' }}
+      >
+        <div className="mx-auto max-w-7xl px-4 py-3.5 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-lg font-semibold text-zinc-900">
-                {process.env.NEXT_PUBLIC_APP_NAME ?? 'NetSuite Commercial KPIs'}
-              </h1>
-              <p className="text-xs text-zinc-400">Managed Services · Live from Google Sheets</p>
+            <div className="flex items-center gap-3">
+              {/* Brand mark */}
+              <div
+                className="grid h-9 w-9 flex-none place-items-center rounded-[10px] text-primary-foreground shadow-sm"
+                style={{ background: 'linear-gradient(150deg, var(--primary), var(--secondary-foreground))' }}
+              >
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 3v18h18" />
+                  <path d="m7 14 4-4 3 3 5-6" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-base font-semibold tracking-tight text-foreground">
+                  {process.env.NEXT_PUBLIC_APP_NAME ?? 'NetSuite Commercial KPIs'}
+                </h1>
+                <p className="text-xs text-muted-foreground">Managed Services · Live from Google Sheets</p>
+              </div>
             </div>
             <UserNav />
           </div>
@@ -124,7 +139,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
 
         {/* Error state */}
         {errorMsg && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-6 py-4 text-sm text-red-700">
+          <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-6 py-4 text-sm text-destructive">
             <strong>Could not load data:</strong> {errorMsg}
           </div>
         )}
@@ -132,7 +147,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         {kpis && (
           <>
             {/* Section label */}
-            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-widest -mb-4">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest -mb-4">
               {periodLabel}
             </p>
 
@@ -160,9 +175,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                       : '—',
                 },
               ].map(({ label, value }) => (
-                <div key={label} className="rounded-2xl border-0 bg-white px-5 py-4 shadow-[0_1px_4px_0_rgba(0,0,0,0.06),0_4px_16px_0_rgba(0,0,0,0.04)]">
-                  <p className="text-xs font-medium uppercase tracking-wide text-zinc-400">{label}</p>
-                  <p className="mt-1 text-2xl font-semibold text-zinc-900 text-right">{value}</p>
+                <div
+                  key={label}
+                  className="rounded-2xl border border-border bg-card px-5 py-4 shadow-[0_1px_2px_0_rgba(16,24,40,0.05)]"
+                >
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+                  <p className="mt-1 text-2xl font-semibold text-foreground text-right font-mono tabular-nums">{value}</p>
                 </div>
               ))}
             </section>
@@ -172,10 +190,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
               <RevenueTrendChart
                 data={nbwTrend}
                 title={`New Business Won · ${displayYear === 'all' ? '2026' : displayYear}`}
+                color="var(--chart-1)"
               />
               <RevenueTrendChart
                 data={mrrTrend}
                 title={`MRR Added · ${displayYear === 'all' ? '2026' : displayYear}`}
+                color="var(--chart-2)"
               />
             </section>
 
@@ -196,14 +216,14 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-200 bg-white mt-16">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8 flex items-center justify-between text-xs text-zinc-400">
+      <footer className="border-t border-border bg-card mt-16">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8 flex items-center justify-between text-xs text-muted-foreground">
           <span>Data source: Google Sheets · refreshes every 60 seconds</span>
           <a
             href={SHEET_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-zinc-700 underline underline-offset-2"
+            className="hover:text-foreground underline underline-offset-2"
           >
             Open source sheet ↗
           </a>

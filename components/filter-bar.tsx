@@ -21,11 +21,12 @@ const MONTHS: { value: string; label: string }[] = [
   { value: '11', label: 'November' }, { value: '12', label: 'December' },
 ];
 
-function yearLabel(v: string) {
-  if (v === '2025') return '2025';
-  if (v === '2026') return '2026';
-  return 'All years';
-}
+const YEARS: { value: string; label: string }[] = [
+  { value: '2025', label: '2025' },
+  { value: '2026', label: '2026' },
+  { value: 'all', label: 'All' },
+];
+
 function monthLabel(v: string) {
   return MONTHS.find((m) => m.value === v)?.label ?? 'All months';
 }
@@ -70,17 +71,27 @@ export function FilterBar({ year, month, serviceLine, engagementType, lastSynced
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      {/* Year */}
-      <Select value={year} onValueChange={(v) => v && updateParam('year', v)}>
-        <SelectTrigger className="w-32">
-          <span className="text-sm">{yearLabel(year)}</span>
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="2025">2025</SelectItem>
-          <SelectItem value="2026">2026</SelectItem>
-          <SelectItem value="all">All years</SelectItem>
-        </SelectContent>
-      </Select>
+      {/* Year — segmented control */}
+      <div className="inline-flex rounded-lg border border-border bg-secondary p-1 gap-0.5">
+        {YEARS.map((y) => {
+          const active = year === y.value;
+          return (
+            <button
+              key={y.value}
+              onClick={() => updateParam('year', y.value)}
+              aria-pressed={active}
+              className={cn(
+                'rounded-md px-3 py-1 text-sm font-medium transition-colors',
+                active
+                  ? 'bg-card text-[var(--secondary-foreground)] shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {y.label}
+            </button>
+          );
+        })}
+      </div>
 
       {/* Month */}
       <Select value={month} onValueChange={(v) => v && updateParam('month', v)}>
@@ -121,7 +132,10 @@ export function FilterBar({ year, month, serviceLine, engagementType, lastSynced
 
       <div className="ml-auto flex items-center gap-3">
         {lastSync && (
-          <span className="text-xs text-zinc-400">Last synced {lastSync}</span>
+          <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            Last synced {lastSync}
+          </span>
         )}
         <Button
           variant="outline"
