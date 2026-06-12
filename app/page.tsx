@@ -12,6 +12,7 @@ import { PipelineVsTargetChart } from '@/components/charts/pipeline-vs-target';
 import { OpportunityTable } from '@/components/opportunity-table';
 import { unstable_cache } from 'next/cache';
 import { UserNav } from '@/components/user-nav';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 const SHEET_URL =
   'https://docs.google.com/spreadsheets/d/1hFNaWnzW6Bol2zk7gLjfY4sO-2CqNm18Zvfi_WG_kKU/edit';
@@ -120,7 +121,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                 <p className="text-xs text-muted-foreground">Managed Services · Live from Google Sheets</p>
               </div>
             </div>
-            <UserNav />
+            <div className="flex items-center gap-2.5">
+              <ThemeToggle />
+              <UserNav />
+            </div>
           </div>
         </div>
       </header>
