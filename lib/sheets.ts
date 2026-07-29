@@ -26,14 +26,20 @@ async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
 
 export type RawRow = Record<string, string>;
 
-export const TAB_NAMES = [
-  'Sales Funnel 2025',
-  'Sales Funnel 2026',
-  'Working file 2025 plan',
-  'Working file 2026 plan',
-] as const;
+/**
+ * Live tabs fetched at runtime. The "Working file <year> plan" tabs are a
+ * one-time source for the hard-coded values in lib/targets.ts and must never
+ * be requested here — see README "Known limitations".
+ */
+export const TAB_NAMES = ['Sales Funnel 2025', 'Sales Funnel 2026'] as const;
 
 export type TabName = (typeof TAB_NAMES)[number];
+
+export interface TabResult {
+  tab: TabName;
+  status: 'ok' | 'error';
+  message?: string;
+}
 
 /**
  * Fetches all rows from a single tab as an array of header-keyed objects.
@@ -68,13 +74,29 @@ export async function fetchTab(tabName: TabName): Promise<RawRow[]> {
     });
 }
 
-/** Fetches all four tabs in parallel. */
+/** Fetches a single tab, isolating failures so one bad tab can't take down the others. */
+async function fetchTabIsolated(
+  tabName: TabName
+): Promise<{ rows: RawRow[]; result: TabResult }> {
+  try {
+    const rows = await fetchTab(tabName);
+    return { rows, result: { tab: tabName, status: 'ok' } };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[sheets] Failed to fetch tab "${tabName}": ${message}`);
+    return { rows: [], result: { tab: tabName, status: 'error', message } };
+  }
+}
+
+/** Fetches the live sales-funnel tabs in parallel; a per-tab failure returns an empty array for that tab instead of throwing. */
 export async function fetchAllTabs() {
-  const [funnel2025, funnel2026, plan2025, plan2026] = await Promise.all([
-    fetchTab('Sales Funnel 2025'),
-    fetchTab('Sales Funnel 2026'),
-    fetchTab('Working file 2025 plan'),
-    fetchTab('Working file 2026 plan'),
+  const [funnel2025, funnel2026] = await Promise.all([
+    fetchTabIsolated('Sales Funnel 2025'),
+    fetchTabIsolated('Sales Funnel 2026'),
   ]);
-  return { funnel2025, funnel2026, plan2025, plan2026 };
+  return {
+    funnel2025: funnel2025.rows,
+    funnel2026: funnel2026.rows,
+    tabResults: [funnel2025.result, funnel2026.result] as TabResult[],
+  };
 }
