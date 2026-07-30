@@ -1,4 +1,6 @@
 import { auth, signOut } from '@/auth';
+import { isSettingsAllowed } from '@/lib/settings-auth';
+import { Settings } from 'lucide-react';
 
 export async function UserNav() {
   const session = await auth();
@@ -11,6 +13,16 @@ export async function UserNav() {
 
   return (
     <div className="flex items-center gap-3">
+      {isSettingsAllowed(email) && (
+        <a
+          href="/settings"
+          title="Settings"
+          className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+        >
+          <Settings className="h-4 w-4" />
+        </a>
+      )}
+
       <div className="hidden sm:block text-right">
         <p className="text-xs font-medium text-zinc-700 leading-tight">{name ?? email}</p>
         {name && <p className="text-xs text-zinc-400 leading-tight">{email}</p>}

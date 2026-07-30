@@ -1,7 +1,7 @@
 import type { Opportunity } from './normalize';
 import type { Filters } from './filters';
 import { matchesFilters } from './filters';
-import { TARGETS } from './targets';
+import type { TargetsMap } from './targets-map';
 
 const DEFAULT_PROBABILITY = 0.5;
 
@@ -104,10 +104,11 @@ export function yoyChange(
 
 export function targetAttainment(
   actual: number,
-  metric: keyof typeof TARGETS[2025]['annual'],
-  year: 2025 | 2026
+  metric: keyof TargetsMap[2025],
+  year: 2025 | 2026,
+  targets: TargetsMap
 ): number {
-  const target = TARGETS[year]?.annual[metric] as number | undefined;
+  const target = targets[year]?.[metric];
   if (!target) return 0;
   return actual / target;
 }
@@ -186,7 +187,7 @@ export type KpiResult = {
   };
 };
 
-export function computeAllKpis(opps: Opportunity[], filters: Filters): KpiResult {
+export function computeAllKpis(opps: Opportunity[], filters: Filters, targets: TargetsMap): KpiResult {
   const nbw = newBusinessWon(opps, filters);
   const mrr = mrrAdded(opps, filters);
   const msr = managedServicesRevenue(opps, filters);
@@ -219,11 +220,11 @@ export function computeAllKpis(opps: Opportunity[], filters: Filters): KpiResult
     },
     targetAttainment: year
       ? {
-          newBusinessWon: targetAttainment(nbw, 'newBusinessWon', year),
-          mrrAdded: targetAttainment(mrr, 'mrrAdded', year),
-          managedServicesRevenue: targetAttainment(msr, 'managedServicesRevenue', year),
-          newLogosWon: targetAttainment(nl, 'newLogosWon', year),
-          winRate: targetAttainment(wr, 'winRate', year),
+          newBusinessWon: targetAttainment(nbw, 'newBusinessWon', year, targets),
+          mrrAdded: targetAttainment(mrr, 'mrrAdded', year, targets),
+          managedServicesRevenue: targetAttainment(msr, 'managedServicesRevenue', year, targets),
+          newLogosWon: targetAttainment(nl, 'newLogosWon', year, targets),
+          winRate: targetAttainment(wr, 'winRate', year, targets),
         }
       : { newBusinessWon: 0, mrrAdded: 0, managedServicesRevenue: 0, newLogosWon: 0, winRate: 0 },
   };

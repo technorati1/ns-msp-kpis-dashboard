@@ -9,6 +9,9 @@ async function main() {
   const { normalizeAllRows } = await import('../lib/normalize');
   const { computeAllKpis } = await import('../lib/kpis');
   const { getActiveOpportunities } = await import('../lib/db/queries');
+  const { getTargetsMap } = await import('../lib/db/get-targets');
+
+  const targets = await getTargetsMap();
 
   // --- Live Sheets path (today's production behaviour) ---
   const { funnel2025, funnel2026 } = await fetchAllTabs();
@@ -33,8 +36,8 @@ async function main() {
 
   for (const year of [2025, 2026] as const) {
     const filters = { year, month: 'all' as const, serviceLine: 'all' as const, engagementType: 'all' as const };
-    const liveKpis = computeAllKpis(liveOpps, filters);
-    const dbKpis = computeAllKpis(dbOpps, filters);
+    const liveKpis = computeAllKpis(liveOpps, filters, targets);
+    const dbKpis = computeAllKpis(dbOpps, filters, targets);
 
     console.log(`=== Year ${year} ===`);
     console.log('metric'.padEnd(24), 'live'.padEnd(18), 'db'.padEnd(18), 'match');

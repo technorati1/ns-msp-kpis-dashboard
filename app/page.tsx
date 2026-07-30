@@ -3,7 +3,7 @@ import { reviveOpportunity } from '@/lib/normalize';
 import { getAllOpportunities } from '@/lib/get-opportunities';
 import { computeAllKpis, monthlyTrend, segmentBreakdown } from '@/lib/kpis';
 import { parseFiltersFromParams } from '@/lib/filters';
-import { TARGETS } from '@/lib/targets';
+import { getTargetsMap } from '@/lib/db/get-targets';
 import { KpiGrid } from '@/components/kpi-grid';
 import { FilterBar } from '@/components/filter-bar';
 import { RevenueTrendChart } from '@/components/charts/revenue-trend';
@@ -51,12 +51,13 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
   let mrrTrend: Awaited<ReturnType<typeof monthlyTrend>> = [];
   let segments: Awaited<ReturnType<typeof segmentBreakdown>> = [];
   let filteredOpps: Awaited<ReturnType<typeof reviveOpportunity>>[] = [];
+  const targets = await getTargetsMap();
 
   try {
     const { opportunities: raw, fetchedAt: fa } = await getCachedData();
     fetchedAt = fa;
     const opportunities = raw.map(reviveOpportunity);
-    kpis = computeAllKpis(opportunities, filters);
+    kpis = computeAllKpis(opportunities, filters, targets);
 
     const trendYear: 2025 | 2026 = displayYear === 'all' ? 2026 : displayYear;
     nbwTrend = monthlyTrend(opportunities, trendYear, 'newBusinessWon', displayLine, displayEng);
@@ -79,7 +80,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
 
   const pipelineTarget =
     displayYear !== 'all'
-      ? (TARGETS[displayYear]?.annual.qualifiedPipeline ?? 0)
+      ? (targets[displayYear]?.qualifiedPipeline ?? 0)
       : 0;
 
   const periodLabel = [
@@ -156,7 +157,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
 
             {/* KPI grid */}
             <section aria-label="Key Performance Indicators">
-              <KpiGrid kpis={kpis} year={displayYear === 'all' ? 'all' : displayYear} />
+              <KpiGrid kpis={kpis} year={displayYear === 'all' ? 'all' : displayYear} targets={targets} />
             </section>
 
             {/* Secondary stats strip */}

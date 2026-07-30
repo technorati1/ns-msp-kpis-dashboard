@@ -1,25 +1,31 @@
 import { KpiCard } from './kpi-card';
 import { formatCurrency, formatPercent, formatCount } from '@/lib/format';
-import { TARGETS } from '@/lib/targets';
 import type { KpiResult } from '@/lib/kpis';
+import type { TargetsMap } from '@/lib/targets-map';
 
 type Props = {
   kpis: KpiResult;
   year: 2025 | 2026 | 'all';
+  targets: TargetsMap;
 };
 
-function targetLabel(year: 2025 | 2026 | 'all', key: keyof typeof TARGETS[2025]['annual'], formatter: (n: number) => string): string {
+function targetLabel(
+  year: 2025 | 2026 | 'all',
+  targets: TargetsMap,
+  key: keyof TargetsMap[2025],
+  formatter: (n: number) => string
+): string {
   if (year === 'all') return '—';
-  const val = TARGETS[year]?.annual[key] as number | undefined;
+  const val = targets[year]?.[key];
   return val != null ? formatter(val) : '—';
 }
 
-export function KpiGrid({ kpis, year }: Props) {
+export function KpiGrid({ kpis, year, targets }: Props) {
   const cards = [
     {
       title: 'New Business Won',
       value: formatCurrency(kpis.newBusinessWon),
-      target: targetLabel(year, 'newBusinessWon', formatCurrency),
+      target: targetLabel(year, targets, 'newBusinessWon', formatCurrency),
       attainment: kpis.targetAttainment.newBusinessWon,
       yoy: kpis.yoy.newBusinessWon,
       tooltip:
@@ -28,7 +34,7 @@ export function KpiGrid({ kpis, year }: Props) {
     {
       title: 'MRR Added',
       value: formatCurrency(kpis.mrrAdded),
-      target: targetLabel(year, 'mrrAdded', formatCurrency),
+      target: targetLabel(year, targets, 'mrrAdded', formatCurrency),
       attainment: kpis.targetAttainment.mrrAdded,
       yoy: kpis.yoy.mrrAdded,
       tooltip:
@@ -37,7 +43,7 @@ export function KpiGrid({ kpis, year }: Props) {
     {
       title: 'Managed Services Revenue',
       value: formatCurrency(kpis.managedServicesRevenue),
-      target: targetLabel(year, 'managedServicesRevenue', formatCurrency),
+      target: targetLabel(year, targets, 'managedServicesRevenue', formatCurrency),
       attainment: kpis.targetAttainment.managedServicesRevenue,
       yoy: kpis.yoy.managedServicesRevenue,
       tooltip:
@@ -47,8 +53,8 @@ export function KpiGrid({ kpis, year }: Props) {
     {
       title: 'Qualified Pipeline (90d)',
       value: formatCurrency(kpis.qualifiedPipeline90d),
-      target: targetLabel(year, 'qualifiedPipeline', formatCurrency),
-      attainment: year !== 'all' ? kpis.qualifiedPipeline90d / (TARGETS[year]?.annual.qualifiedPipeline ?? 1) : 0,
+      target: targetLabel(year, targets, 'qualifiedPipeline', formatCurrency),
+      attainment: year !== 'all' ? kpis.qualifiedPipeline90d / (targets[year]?.qualifiedPipeline ?? 1) : 0,
       yoy: null,
       tooltip:
         'Total annualised value of Open deals with a closing date within the next 90 days. Always forward-looking from today — period filter does not apply to this KPI.',
@@ -56,7 +62,7 @@ export function KpiGrid({ kpis, year }: Props) {
     {
       title: 'Win Rate',
       value: formatPercent(kpis.winRate),
-      target: year !== 'all' ? formatPercent(TARGETS[year]?.annual.winRate ?? 0) : '—',
+      target: year !== 'all' ? formatPercent(targets[year]?.winRate ?? 0) : '—',
       attainment: kpis.targetAttainment.winRate,
       yoy: kpis.yoy.winRate,
       tooltip:
@@ -65,10 +71,10 @@ export function KpiGrid({ kpis, year }: Props) {
     {
       title: 'Average Deal Size',
       value: formatCurrency(kpis.averageDealSize),
-      target: year !== 'all' ? formatCurrency(TARGETS[year]?.annual.averageDealSize ?? 0) : '—',
+      target: year !== 'all' ? formatCurrency(targets[year]?.averageDealSize ?? 0) : '—',
       attainment:
-        year !== 'all' && TARGETS[year]?.annual.averageDealSize
-          ? kpis.averageDealSize / TARGETS[year].annual.averageDealSize
+        year !== 'all' && targets[year]?.averageDealSize
+          ? kpis.averageDealSize / targets[year].averageDealSize
           : 0,
       yoy: kpis.yoy.averageDealSize,
       tooltip:

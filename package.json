@@ -14,6 +14,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx scripts/seed-sync-config.ts",
+    "db:seed-targets": "tsx scripts/seed-targets.ts",
     "backfill": "tsx scripts/backfill.ts",
     "sync:once": "tsx scripts/run-sync-once.ts",
     "compare-kpis": "tsx scripts/compare-kpis.ts"

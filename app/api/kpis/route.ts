@@ -3,6 +3,7 @@ import { unstable_cache } from 'next/cache';
 import { getAllOpportunities } from '@/lib/get-opportunities';
 import { parseFiltersFromParams } from '@/lib/filters';
 import { computeAllKpis } from '@/lib/kpis';
+import { getTargetsMap } from '@/lib/db/get-targets';
 
 export const runtime = 'nodejs';
 
@@ -13,8 +14,8 @@ export async function GET(req: NextRequest) {
 
     const result = await unstable_cache(
       async () => {
-        const opps = await getAllOpportunities();
-        return computeAllKpis(opps, filters);
+        const [opps, targets] = await Promise.all([getAllOpportunities(), getTargetsMap()]);
+        return computeAllKpis(opps, filters, targets);
       },
       [cacheKey],
       { revalidate: 60 }
