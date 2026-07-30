@@ -6,12 +6,14 @@ export default auth((req) => {
   const isSignedIn = !!req.auth;
   const isSignInPage = req.nextUrl.pathname === '/sign-in';
   const isAuthRoute = req.nextUrl.pathname.startsWith('/api/auth');
+  // Exact match only — /api/sync/trigger is a different route and stays behind session auth below.
+  const isBearerSyncRoute = req.nextUrl.pathname === '/api/sync';
   const isSettingsPath =
     req.nextUrl.pathname === '/settings' ||
     req.nextUrl.pathname.startsWith('/settings/') ||
     req.nextUrl.pathname.startsWith('/api/settings/');
 
-  if (isAuthRoute) return NextResponse.next();
+  if (isAuthRoute || isBearerSyncRoute) return NextResponse.next();
   if (!isSignedIn && !isSignInPage) {
     return NextResponse.redirect(new URL('/sign-in', req.url));
   }

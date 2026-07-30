@@ -4,6 +4,8 @@ import { getAllOpportunities } from '@/lib/get-opportunities';
 import { computeAllKpis, monthlyTrend, segmentBreakdown } from '@/lib/kpis';
 import { parseFiltersFromParams } from '@/lib/filters';
 import { getTargetsMap } from '@/lib/db/get-targets';
+import { getSyncHealth } from '@/lib/health';
+import { StaleBanner } from '@/components/stale-banner';
 import { KpiGrid } from '@/components/kpi-grid';
 import { FilterBar } from '@/components/filter-bar';
 import { RevenueTrendChart } from '@/components/charts/revenue-trend';
@@ -52,6 +54,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
   let segments: Awaited<ReturnType<typeof segmentBreakdown>> = [];
   let filteredOpps: Awaited<ReturnType<typeof reviveOpportunity>>[] = [];
   const targets = await getTargetsMap();
+  const health = await getSyncHealth().catch(() => null);
 
   try {
     const { opportunities: raw, fetchedAt: fa } = await getCachedData();
@@ -140,6 +143,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
             lastSyncedAt={fetchedAt}
           />
         </Suspense>
+
+        {/* Stale-data banner */}
+        {health && <StaleBanner tabs={health.tabs} />}
 
         {/* Error state */}
         {errorMsg && (
