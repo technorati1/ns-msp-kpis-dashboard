@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
-import { fetchAllTabs } from '@/lib/sheets';
-import { normalizeAllRows, reviveOpportunity } from '@/lib/normalize';
+import { reviveOpportunity } from '@/lib/normalize';
+import { getAllOpportunities } from '@/lib/get-opportunities';
 import { computeAllKpis, monthlyTrend, segmentBreakdown } from '@/lib/kpis';
 import { parseFiltersFromParams } from '@/lib/filters';
 import { TARGETS } from '@/lib/targets';
@@ -19,9 +19,8 @@ const SHEET_URL =
 
 const getCachedData = unstable_cache(
   async () => {
-    const { funnel2025, funnel2026 } = await fetchAllTabs();
-    const result = normalizeAllRows(funnel2025, funnel2026);
-    return { opportunities: result.opportunities, fetchedAt: new Date().toISOString() };
+    const opportunities = await getAllOpportunities();
+    return { opportunities, fetchedAt: new Date().toISOString() };
   },
   ['dashboard-data'],
   { revalidate: 60 }
@@ -118,7 +117,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                 <h1 className="text-base font-semibold tracking-tight text-foreground">
                   {process.env.NEXT_PUBLIC_APP_NAME ?? 'NetSuite Commercial KPIs'}
                 </h1>
-                <p className="text-xs text-muted-foreground">Managed Services · Live from Google Sheets</p>
+                <p className="text-xs text-muted-foreground">Managed Services · Synced from Google Sheets</p>
               </div>
             </div>
             <div className="flex items-center gap-2.5">
@@ -222,7 +221,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
       {/* Footer */}
       <footer className="border-t border-border bg-card mt-16">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8 flex items-center justify-between text-xs text-muted-foreground">
-          <span>Data source: Google Sheets · refreshes every 60 seconds</span>
+          <span>Data source: synced database (from Google Sheets) · refreshes every 60 seconds</span>
           <a
             href={SHEET_URL}
             target="_blank"

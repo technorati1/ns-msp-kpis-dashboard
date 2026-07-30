@@ -44,8 +44,12 @@ export interface TabResult {
 /**
  * Fetches all rows from a single tab as an array of header-keyed objects.
  * Row 1 is treated as headers; empty rows are skipped.
+ *
+ * Accepts a plain string (not just TabName) because the sync engine reads
+ * tab names from the editable sync_config table — a tab rename is a data
+ * change, not a type change.
  */
-export async function fetchTab(tabName: TabName): Promise<RawRow[]> {
+export async function fetchTab(tabName: string): Promise<RawRow[]> {
   const auth = getAuth();
   const sheets = google.sheets({ version: 'v4', auth });
 
